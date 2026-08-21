@@ -1,0 +1,12 @@
+# Policy · rank 40 · account-scoped. Principals are bound by the
+# PolicyAssignment in `42-policy-assignment.yaml`, never inline here.
+apiVersion: ragnerock.com/v1alpha1
+kind: Policy
+metadata:
+  name: read-only-documents
+spec:
+  description: "Read access to documents"
+  policyVersion: "1"
+  permissions: [get, list]
+  resources:
+    - "document:*"

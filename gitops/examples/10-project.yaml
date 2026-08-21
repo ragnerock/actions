@@ -1,0 +1,11 @@
+# Project · rank 10 · account-scoped.
+# The `ragnerock.com/project` annotation on every project-scoped kind below
+# points at this project's name.
+apiVersion: ragnerock.com/v1alpha1
+kind: Project
+metadata:
+  name: alpha-research
+spec:
+  description: "Equity alpha research workspace"
+  autoArchiveSucceededJobsAfterDays: 30
+  owner: john@ragnerock.com

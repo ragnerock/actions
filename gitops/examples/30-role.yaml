@@ -1,0 +1,8 @@
+# Role · rank 30 · account-scoped. Members and teams are bound by the
+# RoleAssignment in `32-role-assignment.yaml`, never inline here.
+apiVersion: ragnerock.com/v1alpha1
+kind: Role
+metadata:
+  name: quant-researchers
+spec:
+  description: "Quant research team"

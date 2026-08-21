@@ -1,0 +1,33 @@
+# DBProviderConfig · rank 20 · account-scoped · secret-bearing.
+# Two variants: a BigQuery config (credentialsJson secretKeyRef) and a Postgres
+# config (connectionString secretKeyRef). Both point at `db-credentials`.
+apiVersion: ragnerock.com/v1alpha1
+kind: DBProviderConfig
+metadata:
+  name: warehouse-bq
+spec:
+  description: "BigQuery warehouse for annotations"
+  providerType: bigquery
+  active: true
+  bigQuery:
+    gcpProjectId: ragnerock-prod
+    datasetName: annotations
+    datasetLocation: US
+    credentialsJson:
+      secretKeyRef:
+        name: db-credentials
+        key: credentials.json
+---
+apiVersion: ragnerock.com/v1alpha1
+kind: DBProviderConfig
+metadata:
+  name: warehouse-pg
+spec:
+  description: "External Postgres"
+  providerType: postgresql
+  schemaName: research
+  active: true
+  connectionString:
+    secretKeyRef:
+      name: db-credentials
+      key: pgDsn

@@ -1,0 +1,41 @@
+name: ci
+
+# This workflow is vendored from the Ragnerock monorepo's actions/workflows/
+# directory and is overwritten by every sync. Edit it there.
+#
+# It deliberately does not re-run the applier's unit tests: those are the
+# monorepo's gate and already passed at the commit this repository was vendored
+# from. What only exists here is the published layout -- `uses: ./gitops`
+# resolving to an action at the path consumers reference -- so that is what gets
+# exercised.
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Apply examples (dry run)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      # A dry run resolves and masks every secret source before eliding the
+      # values, so the fromEnv keys the examples reference have to be set --
+      # with throwaway values, since nothing is uploaded. `url` is never
+      # contacted.
+      - name: gitops apply --dry-run
+        uses: ./gitops
+        with:
+          directory: gitops/examples
+          url: https://example.invalid
+          token: not-a-real-token
+          dry-run: 'true'
+        env:
+          GEMINI_EMBED_KEY: dry-run-placeholder
+          AWS_BLOB_CREDENTIALS: dry-run-placeholder
+          WAREHOUSE_PG_DSN: dry-run-placeholder

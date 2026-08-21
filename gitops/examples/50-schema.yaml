@@ -1,0 +1,20 @@
+# Schema · rank 50 · project-scoped · foldered.
+# `ragnerock.com/project` binds it to the Project; `ragnerock.com/folder` is optional.
+apiVersion: ragnerock.com/v1alpha1
+kind: Schema
+metadata:
+  name: sentiment-score
+  annotations:
+    ragnerock.com/project: alpha-research
+    ragnerock.com/folder: schemas
+spec:
+  description: "Sentiment extraction schema"
+  jsonSchema:
+    type: object
+    properties:
+      sentiment:
+        type: string
+        enum: [positive, neutral, negative]
+      confidence:
+        type: number
+    required: [sentiment]

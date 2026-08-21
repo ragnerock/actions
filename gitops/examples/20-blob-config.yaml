@@ -1,0 +1,18 @@
+# BlobProviderConfig · rank 20 · account-scoped · secret-bearing.
+apiVersion: ragnerock.com/v1alpha1
+kind: BlobProviderConfig
+metadata:
+  name: research-bucket
+spec:
+  description: "S3 bucket for raw filings"
+  providerType: s3
+  bucketName: ragnerock-filings
+  region: us-east-1
+  pathPrefix: raw/
+  active: true
+  credentials:
+    secretKeyRef:
+      name: blob-credentials
+      key: aws
+  providerConfig:
+    endpoint: https://s3.us-east-1.amazonaws.com

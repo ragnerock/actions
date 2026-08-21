@@ -1,0 +1,18 @@
+# Agent · rank 60 · project-scoped · foldered.
+# `schema` references the Schema above (must exist in the same project).
+# `template` (an OperatorTemplate name) is optional and omitted here — set it only
+# if a matching template exists, or apply will fail resolving the reference.
+apiVersion: ragnerock.com/v1alpha1
+kind: Agent
+metadata:
+  name: earnings-sentiment
+  annotations:
+    ragnerock.com/project: alpha-research
+    ragnerock.com/folder: agents
+spec:
+  description: "Extracts sentiment from earnings calls"
+  generationPrompt: "Classify the sentiment of this earnings call excerpt."
+  chunkType: paragraph
+  batchSize: 50
+  multiAnnotation: false
+  schema: sentiment-score

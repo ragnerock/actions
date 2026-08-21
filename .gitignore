@@ -1,0 +1,5 @@
+__pycache__
+
+# Populated by vendir sync and emptied by scripts/ci/sync-actions.sh in the
+# ragnerock monorepo; never committed.
+.vendir-staging/

@@ -1,0 +1,30 @@
+# Workflow · rank 70 · project-scoped · foldered.
+# Each node's `agent` must reference an Agent in the same project. Both nodes here
+# use `earnings-sentiment`; the second demonstrates `dependsOn` + `condition`.
+apiVersion: ragnerock.com/v1alpha1
+kind: Workflow
+metadata:
+  name: filing-pipeline
+  annotations:
+    ragnerock.com/project: alpha-research
+    ragnerock.com/folder: workflows
+spec:
+  description: "End-to-end filing annotation"
+  isActive: true
+  autoRunOnUpload: true
+  nodes:
+    - name: sentiment
+      agent: earnings-sentiment
+      persist: true
+      onError: retry
+      maxRetries: 3
+      position: {x: 100, y: 200, z: 0}
+    - name: recheck
+      agent: earnings-sentiment
+      persist: true
+      onError: skip_node
+      dependsOn: [sentiment]
+      condition:
+        field: sentiment
+        operator: equals
+        value: negative

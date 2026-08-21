@@ -1,0 +1,119 @@
+name: 'Ragnerock GitOps Apply'
+description: >-
+  Discover Ragnerock GitOps manifests in a repository (or a directory within it)
+  and apply them to a Ragnerock instance. Secret values are resolved in the
+  workflow -- from the job environment, or from GCP Secret Manager, AWS Secrets
+  Manager, or Azure Key Vault using the job's ambient cloud identity -- then
+  sealed to the instance's public key before upload.
+author: 'Ragnerock'
+branding:
+  icon: 'upload-cloud'
+  color: 'purple'
+
+inputs:
+  url:
+    description: 'Base URL of the target Ragnerock instance (e.g. https://app.ragnerock.com).'
+    required: true
+  token:
+    description: 'Personal API token for Bearer auth. Provide this, or email + password.'
+    required: false
+    default: ''
+  email:
+    description: 'Login email (used with `password` when no `token` is given).'
+    required: false
+    default: ''
+  password:
+    description: 'Login password (used with `email` when no `token` is given).'
+    required: false
+    default: ''
+  repository:
+    description: >-
+      Repository (owner/name) to check out and apply from. Leave empty to apply
+      from the already checked-out workspace (run actions/checkout first).
+    required: false
+    default: ''
+  ref:
+    description: 'Git ref (branch, tag, or SHA) to check out when `repository` is set.'
+    required: false
+    default: ''
+  github-token:
+    description: 'Token used to check out `repository` when it is private.'
+    required: false
+    default: ${{ github.token }}
+  directory:
+    description: >-
+      Directory within the repo to scope the manifest search to. Defaults to the
+      repo root, which walks the whole repository for Ragnerock manifests.
+    required: false
+    default: '.'
+  dry-run:
+    description: 'If true, print the manifest that would be applied and exit without contacting the server.'
+    required: false
+    default: 'false'
+  seal:
+    description: >-
+      Encrypt secret values to the instance's public key before uploading, so no
+      plaintext is recoverable from the request body. Leave this on unless the
+      target instance has no sealing key configured.
+    required: false
+    default: 'true'
+  sealing-public-key:
+    description: >-
+      PEM public key to seal to, instead of fetching it from the instance.
+      Fetching protects secrets from request logging and tracing; pinning the key
+      here additionally protects them from anything that terminates TLS in front
+      of the instance (load balancer, WAF, corporate proxy). Get the value from
+      `GET /api/gitops/sealing-key`.
+    required: false
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Check out target repository
+      if: inputs.repository != ''
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.repository }}
+        ref: ${{ inputs.ref }}
+        token: ${{ inputs.github-token }}
+        path: .ragnerock-gitops-src
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+
+    - name: Apply manifests
+      shell: bash
+      env:
+        # Auth + target are passed as env (not argv) so they never appear in a
+        # process listing or the command echo. The applier reads these directly.
+        RAGNEROCK_API_URL: ${{ inputs.url }}
+        RAGNEROCK_API_TOKEN: ${{ inputs.token }}
+        RAGNEROCK_EMAIL: ${{ inputs.email }}
+        RAGNEROCK_PASSWORD: ${{ inputs.password }}
+        # Untrusted inputs referenced in the script below are passed via env to
+        # avoid shell injection through `${{ }}` interpolation.
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+        INPUT_DIRECTORY: ${{ inputs.directory }}
+        INPUT_DRY_RUN: ${{ inputs.dry-run }}
+        INPUT_SEAL: ${{ inputs.seal }}
+        # Multi-line PEM; passed as env so it is never interpolated into the
+        # script body. The applier reads it directly.
+        RAGNEROCK_SEALING_PUBLIC_KEY: ${{ inputs.sealing-public-key }}
+      run: |
+        set -euo pipefail
+
+        # Mode: an explicit `repository` was checked out above, otherwise scan
+        # the caller's workspace.
+        if [ -n "$INPUT_REPOSITORY" ]; then
+          root=".ragnerock-gitops-src"
+        else
+          root="."
+        fi
+        scan="${root%/}/${INPUT_DIRECTORY#./}"
+
+        args=("$scan")
+        [ "$INPUT_DRY_RUN" = "true" ] && args+=(--dry-run)
+        [ "$INPUT_SEAL" = "false" ] && args+=(--no-seal)
+
+        uv run "$GITHUB_ACTION_PATH/gitops_apply.py" "${args[@]}"
