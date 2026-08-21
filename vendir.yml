@@ -1,0 +1,44 @@
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+minimumRequiredVersion: 0.40.0
+# Every git.ref below is rewritten to refs/tags/<release> by
+# scripts/ci/sync-actions.sh for the duration of a release sync, and restored
+# afterwards; origin/main is the ref a hand-run sync follows. They must all name
+# the same ref -- the script refuses to sync a vendir.yml that mixes them, since
+# a single source commit is what gets recorded in the mirror.
+directories:
+  # One entry per published action. `uses: ragnerock/actions/gitops@ref` reads
+  # gitops/action.yml at that ref, so the directory name here is the public
+  # name of the action and must not change without a major bump.
+  - path: gitops
+    contents:
+      - path: .
+        git:
+          url: https://github.com/ragnerock/ragnerock
+          ref: origin/main
+        includePaths:
+          - actions/gitops/**/*
+        newRootPath: actions/gitops
+  - path: .github/workflows
+    contents:
+      - path: .
+        git:
+          url: https://github.com/ragnerock/ragnerock
+          ref: origin/main
+        includePaths:
+          - actions/workflows/**/*
+        newRootPath: actions/workflows
+  # vendir manages directories, never individual files, so the files that
+  # belong at the repository root are staged here and moved into place by
+  # scripts/ci/sync-actions.sh. The path is a contract with that script.
+  - path: .vendir-staging/root
+    contents:
+      - path: .
+        git:
+          url: https://github.com/ragnerock/ragnerock
+          ref: origin/main
+        includePaths:
+          - actions/LICENSE
+          - actions/README.md
+          - actions/.gitignore
+        newRootPath: actions
