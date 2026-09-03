@@ -3,7 +3,7 @@
 apiVersion: ragnerock.com/v1alpha1
 kind: Policy
 metadata:
-  name: read-only-documents
+  name: read_only_documents
 spec:
   description: "Read access to documents"
   policyVersion: "1"

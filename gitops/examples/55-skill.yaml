@@ -1,0 +1,28 @@
+# Skill · rank 55 · project-scoped · not foldered.
+# A named instruction package agents load on demand via the `load_skill` tool.
+# The description is the discovery text — agents decide from it *when* to load
+# the skill, so write it as "when to use this", not just what it is. The body
+# is the markdown returned by `load_skill`. Agents reference skills by name
+# (see `60-agent.yaml`); skills apply before agents, so one manifest can carry
+# both. `isAvailable: false` parks a skill without unlinking it from agents.
+apiVersion: ragnerock.com/v1alpha1
+kind: Skill
+metadata:
+  name: earnings_call_tone
+  annotations:
+    ragnerock.com/project: alpha_research
+spec:
+  description: >-
+    How to judge sentiment in earnings-call language. Load before classifying
+    the tone of any earnings-call excerpt.
+  body: |
+    # Earnings-call tone
+
+    Management language is systematically optimistic; calibrate against it:
+
+    - Treat hedged phrasing ("headwinds", "challenging environment",
+      "in line with expectations") as negative signals, not neutral.
+    - Weigh the Q&A section over prepared remarks — spontaneous answers
+      carry more signal.
+    - Guidance changes dominate adjectives: a lowered outlook is negative
+      regardless of how upbeat the framing is.

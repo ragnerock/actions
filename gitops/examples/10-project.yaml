@@ -4,7 +4,7 @@
 apiVersion: ragnerock.com/v1alpha1
 kind: Project
 metadata:
-  name: alpha-research
+  name: alpha_research
 spec:
   description: "Equity alpha research workspace"
   autoArchiveSucceededJobsAfterDays: 30

@@ -3,9 +3,9 @@
 apiVersion: ragnerock.com/v1alpha1
 kind: Schema
 metadata:
-  name: sentiment-score
+  name: sentiment_score
   annotations:
-    ragnerock.com/project: alpha-research
+    ragnerock.com/project: alpha_research
     ragnerock.com/folder: schemas
 spec:
   description: "Sentiment extraction schema"
@@ -18,3 +18,51 @@ spec:
       confidence:
         type: number
     required: [sentiment]
+---
+# The same kind with `isMemory: true` declares an agent-memory schema instead of
+# an operator output schema — the backing table for the project's `mem_*` memory
+# records. Import-only: agents evolve these at runtime and export never emits
+# them, so a manifest seeds the taxonomy rather than mirroring it. The name is
+# normalized into the `mem_` namespace (`analyst_notes` → `mem_analyst_notes`),
+# fields must be flat primitives, and re-applying may only add optional fields.
+apiVersion: ragnerock.com/v1alpha1
+kind: Schema
+metadata:
+  name: analyst_notes
+  annotations:
+    ragnerock.com/project: alpha_research
+spec:
+  description: "Durable analyst observations, one per note"
+  isMemory: true
+  jsonSchema:
+    type: object
+    title: Analyst notes
+    properties:
+      subject:
+        type: string
+      note:
+        type: string
+      confidence:
+        type: number
+    required: [subject, note]
+---
+# Output schema for the code agent in `60-agent.yaml`. A code agent's schema is
+# an ordinary output schema — the kind of the agent producing it makes no
+# difference to how its records are stored or queried.
+apiVersion: ragnerock.com/v1alpha1
+kind: Schema
+metadata:
+  name: ticker_mentions
+  annotations:
+    ragnerock.com/project: alpha_research
+    ragnerock.com/folder: schemas
+spec:
+  description: "Ticker symbols mentioned in a passage"
+  jsonSchema:
+    type: object
+    properties:
+      tickers:
+        type: array
+        items:
+          type: string
+    required: [tickers]

@@ -5,9 +5,7 @@
 #   "httpx>=0.27",
 #   "pyyaml>=6.0",
 #   "cryptography>=45.0.0",
-#   # Supplies ragnerock.sealing, the one definition of the sealed-blob format.
-#   # Sharing it with the server is what keeps the two ends from drifting.
-#   "ragnerock>=0.1.2",
+#   "pydantic>=2.0",
 #   # Cloud secret-manager SDKs. Imported lazily, inside the fetch functions, so
 #   # a manifest set that uses none of them pays only the (uv-cached) install.
 #   "google-cloud-secret-manager>=2.20",
@@ -57,8 +55,22 @@ Pass ``--sealing-public-key`` to pin the key instead of fetching it, which is
 what protects against an intermediary that terminates TLS. Pass ``--no-seal``
 to upload plaintext against an instance that has no sealing key configured.
 
+Two rehearsal modes, for different questions. ``--dry-run`` answers "what would
+be uploaded" entirely offline: no server, no credentials, and no cloud calls —
+it parses every reference but fetches none of them, since it elides the values
+anyway. ``--plan`` answers "what would change", by uploading to the real account
+and having the server validate, report, and roll the whole thing back — which is
+the one that catches an unresolved reference before a merge does.
+
+Every dependency above comes from PyPI, and nothing here imports a Ragnerock
+package: the file is meant to be readable, auditable, and runnable on its own in
+a pipeline that has no access to this repository. The cost is that the
+sealed-blob format and the ``encryptedData`` models it writes are a second copy
+of what the server reads, which the repository's tests pin against the first.
+
 Examples:
     ./gitops_apply.py ./manifests/
+    ./gitops_apply.py ./manifests/ --plan
     ./gitops_apply.py ./secret.yaml --url https://ragnerock.example.com
     RAGNEROCK_API_TOKEN=rgnk_... ./gitops_apply.py path/to/repo
 """
@@ -68,6 +80,7 @@ from __future__ import annotations
 import argparse
 import base64
 import binascii
+import hashlib
 import json
 import os
 import sys
@@ -79,13 +92,178 @@ from typing import NamedTuple, NoReturn
 
 import httpx
 import yaml
-from cryptography.hazmat.primitives.asymmetric import rsa
-from ragnerock.sealing import (
-    SealingError,
-    key_fingerprint,
-    load_public_key,
-    seal,
-)
+from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
+from pydantic import BaseModel, ConfigDict
+
+# ---------------------------------------------------------------------------
+# The wire contract with the server.
+#
+# The sealed-blob format and the ``encryptedData`` models below are spelled out
+# here rather than imported from the Ragnerock SDK, because this script has to
+# run standalone against nothing but PyPI. The format carries no version
+# negotiation, so a divergence from the server's copy
+# (``ragnerock.sealing`` / ``ragnerock.gitops``) is a silent correctness bug
+# rather than a caught error — the applier would seal blobs the instance cannot
+# open. ``test_gitops_apply.py`` asserts the two sides still agree, which is
+# what makes the duplication safe.
+# ---------------------------------------------------------------------------
+
+SEALED_PREFIX = "rgnk-sealed"
+SEALED_VERSION = "v1"
+
+_FINGERPRINT_PREFIX = "sha256:"
+
+
+class SealingError(ValueError):
+    """Raised when a sealing key cannot be loaded or a value cannot be sealed."""
+
+
+class SecretSourceType(StrEnum):
+    """Where a ``Secret`` key's value was authored from.
+
+    Every member except :attr:`INLINE` names the ``spec`` field that carried the
+    reference, so the enum doubles as the list of reproducible source blocks.
+    """
+
+    INLINE = "inline"
+    FROM_ENV = "fromEnv"
+    FROM_GCP_SECRET_MANAGER = "fromGcpSecretManager"
+    FROM_AWS_SECRETS_MANAGER = "fromAwsSecretsManager"
+    FROM_AZURE_KEY_VAULT = "fromAzureKeyVault"
+
+
+class SecretSource(BaseModel):
+    """The authored origin of one ``Secret`` key.
+
+    Provenance is deliberately not secret. ``GEMINI_API_KEY`` or
+    ``projects/p/secrets/s`` names where a credential lives, not what it is, and
+    naming it is what makes an export re-appliable.
+
+    Attributes:
+        type (SecretSourceType): Which source block the key came from. Explicit
+            on the wire and required — never inferred from which optional field
+            happens to be populated.
+        env (str | None): Environment-variable name, for
+            :attr:`SecretSourceType.FROM_ENV`.
+        ref (dict[str, str] | None): The authored reference block, verbatim, for
+            the cloud secret-manager sources. Stored as written so an export
+            re-emits exactly what the author had, rather than a normalization of
+            it. Every field of every provider's reference grammar is a string.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    type: SecretSourceType
+    env: str | None = None
+    ref: dict[str, str] | None = None
+
+
+class SealedSecretEntry(BaseModel):
+    """One key of an uploaded ``Secret``: its sealed value plus its provenance.
+
+    Attributes:
+        ciphertext (str): The value sealed to the instance's public key, or the
+            plaintext when the applier ran with sealing disabled.
+        source (SecretSource): Where the applier read the value from. Required:
+            only the applier writes these objects, and it always knows the
+            answer, so an absent source would mean a bug rather than an author's
+            omission.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    ciphertext: str
+    source: SecretSource
+
+
+def _oaep() -> padding.OAEP:
+    """Return the OAEP padding configuration used for DEK wrapping.
+
+    Returns:
+        padding.OAEP: SHA-256 for both the digest and the MGF1 mask.
+    """
+    return padding.OAEP(
+        mgf=padding.MGF1(algorithm=hashes.SHA256()),
+        algorithm=hashes.SHA256(),
+        label=None,
+    )
+
+
+def load_public_key(pem: str) -> rsa.RSAPublicKey:
+    """Load a PEM public key.
+
+    Args:
+        pem (str): PEM-encoded SubjectPublicKeyInfo.
+
+    Returns:
+        rsa.RSAPublicKey: The parsed key.
+
+    Raises:
+        SealingError: If the PEM is malformed or not an RSA key.
+    """
+    try:
+        key = serialization.load_pem_public_key(pem.encode())
+    except (ValueError, TypeError, UnsupportedAlgorithm) as e:
+        raise SealingError(f"could not parse sealing public key: {e}") from e
+    if not isinstance(key, rsa.RSAPublicKey):
+        raise SealingError(f"sealing public key must be RSA, got {type(key).__name__}")
+    return key
+
+
+def key_fingerprint(public_key: rsa.RSAPublicKey) -> str:
+    """Return a stable fingerprint for a sealing public key.
+
+    SHA-256 over the DER SubjectPublicKeyInfo, so the value is independent of
+    PEM whitespace and matches what the instance reports for the same key.
+
+    Args:
+        public_key (rsa.RSAPublicKey): The key to fingerprint.
+
+    Returns:
+        str: ``sha256:<hex>``.
+    """
+    der = public_key.public_bytes(
+        encoding=serialization.Encoding.DER,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    )
+    return f"{_FINGERPRINT_PREFIX}{hashlib.sha256(der).hexdigest()}"
+
+
+def seal(plaintext: str, public_key: rsa.RSAPublicKey) -> str:
+    """Seal a plaintext value to a sealing public key.
+
+    A fresh Fernet data key encrypts the value, and that key is wrapped with
+    RSA-OAEP under the instance's public key. Hybrid encryption is required
+    rather than stylistic — RSA cannot wrap a service-account JSON or a PEM
+    directly. The serialized form is four dot-delimited fields::
+
+        rgnk-sealed.v1.<base64url(wrapped_dek)>.<fernet_token>
+
+    The Fernet token is embedded verbatim: it is already URL-safe base64 and
+    contains no ``.``, so re-encoding it would only inflate the payload.
+
+    Args:
+        plaintext (str): The secret value.
+        public_key (rsa.RSAPublicKey): The instance's sealing public key.
+
+    Returns:
+        str: The serialized sealed blob.
+
+    Raises:
+        SealingError: If the key is too small to wrap a DEK under OAEP.
+    """
+    dek = Fernet.generate_key()
+    token = Fernet(dek).encrypt(plaintext.encode()).decode()
+    try:
+        wrapped = public_key.encrypt(dek, _oaep())
+    except ValueError as e:
+        raise SealingError(f"could not wrap the data key: {e}") from e
+    encoded = base64.urlsafe_b64encode(wrapped).decode()
+    return f"{SEALED_PREFIX}.{SEALED_VERSION}.{encoded}.{token}"
+
 
 _YAML_SUFFIXES = (".yaml", ".yml")
 _RAGNEROCK_API_GROUP = "ragnerock.com/"
@@ -100,6 +278,16 @@ _RESET = "\033[0m"
 # Stand-in for secret material in --dry-run output.
 _REDACTED = "<redacted>"
 
+# Stand-in for a cloud value a --dry-run deliberately did not fetch. Never
+# reaches the output: the dry run elides every value regardless.
+_UNFETCHED = ""
+
+# Read timeout for the apply call. Comfortably above the server's own
+# GITOPS_CODE_REVIEW_BUDGET_SECONDS so the client never gives up on a request
+# the server is still finishing — a timeout here reports a failure for an apply
+# that already committed.
+_APPLY_TIMEOUT_SECONDS = 300.0
+
 # Shortest value worth registering as a log mask. GitHub refuses to mask very
 # short strings anyway, and masking a common short token would blank unrelated
 # log text without protecting anything.
@@ -107,18 +295,19 @@ _MIN_MASK_LENGTH = 4
 
 
 class SecretValue(NamedTuple):
-    """A resolved secret value and the environment variable it came from.
+    """A resolved secret value and the source it was read from.
 
     Attributes:
         value (str): The resolved plaintext.
-        from_env (str | None): The source environment variable for ``fromEnv``
-            keys, or ``None`` for inline ones. Carried through to the upload so
-            the server can still round-trip the binding on export — the variable
-            name is not secret, only its value is.
+        source (SecretSource): Where the value came from. Carried through to the
+            upload so the server can store it and export can re-emit the
+            declaration — an environment variable's name, or a cloud
+            secret-manager reference, says where a credential lives, not what it
+            is, and naming it is what makes an export re-appliable.
     """
 
     value: str
-    from_env: str | None
+    source: SecretSource
 
 
 # Applied to every secret value on its way into the upload: seals it, or elides
@@ -241,9 +430,9 @@ class CloudProvider(StrEnum):
     so the enum doubles as the list of cloud source fields.
     """
 
-    GCP = "fromGcpSecretManager"
-    AWS = "fromAwsSecretsManager"
-    AZURE = "fromAzureKeyVault"
+    GCP = SecretSourceType.FROM_GCP_SECRET_MANAGER.value
+    AWS = SecretSourceType.FROM_AWS_SECRETS_MANAGER.value
+    AZURE = SecretSourceType.FROM_AZURE_KEY_VAULT.value
 
     @property
     def packages(self) -> str:
@@ -256,15 +445,23 @@ class CloudProvider(StrEnum):
             case CloudProvider.AZURE:
                 return "azure-keyvault-secrets azure-identity"
 
+    @property
+    def source_type(self) -> SecretSourceType:
+        """Return the provenance token recorded for keys read from here."""
+        return SecretSourceType(self.value)
+
 
 # Every source a human authors. All of them resolve here, so all of them are
 # stripped from the spec before upload.
 _AUTHORED_SOURCE_FIELDS = (
     "stringData",
     "data",
-    "fromEnv",
+    SecretSourceType.FROM_ENV.value,
     *(provider.value for provider in CloudProvider),
 )
+
+# Values pasted straight into the manifest have no reference to record.
+_INLINE_SOURCE = SecretSource(type=SecretSourceType.INLINE)
 
 # GCP's default version alias when a reference does not pin one.
 _GCP_DEFAULT_VERSION = "latest"
@@ -332,11 +529,15 @@ class CloudBinding(NamedTuple):
         key (str): The key within the ``Secret``.
         ref (CloudRef): What to fetch.
         json_field (str | None): Field to extract from a JSON secret, or ``None``.
+        authored (dict[str, str]): The reference block exactly as written in the
+            manifest. Uploaded as provenance so an export re-emits what the
+            author wrote rather than a normalization of it.
     """
 
     key: str
     ref: CloudRef
     json_field: str | None
+    authored: dict[str, str]
 
 
 def _check_fields(raw: object, allowed: set[str], where: str) -> dict:
@@ -583,7 +784,8 @@ def _parse_refs(
         ref, json_field = _parse_ref(
             provider, raw, f"Secret '{name}' {provider.value} key '{key}'"
         )
-        bindings.append(CloudBinding(key, ref, json_field))
+        authored = {k: str(v) for k, v in raw.items()} if isinstance(raw, dict) else {}
+        bindings.append(CloudBinding(key, ref, json_field, authored))
     return bindings
 
 
@@ -819,11 +1021,21 @@ class CloudSecretFetcher:
     Two manifest keys naming the same remote secret cost one API call, including
     across different ``Secret`` documents, because the cache is keyed on the
     reference itself and ``jsonField`` is applied afterwards.
+
+    An ``offline`` fetcher reaches nothing. References are still parsed, so a
+    malformed one still fails, but no provider is contacted — which is what a
+    ``--dry-run`` wants: it elides every value anyway, so fetching them would
+    demand three cloud identities to render a manifest nobody uploads.
     """
 
-    def __init__(self) -> None:
-        """Initialize an empty per-run cache."""
+    def __init__(self, offline: bool = False) -> None:
+        """Initialize an empty per-run cache.
+
+        Args:
+            offline (bool): Skip the fetch and return a placeholder instead.
+        """
         self._cache: dict[CloudRef, str] = {}
+        self._offline = offline
 
     def resolve(self, binding: CloudBinding, where: str) -> str:
         """Resolve one binding to its plaintext value.
@@ -838,6 +1050,8 @@ class CloudSecretFetcher:
         Raises:
             SystemExit: If the fetch or the field extraction fails.
         """
+        if self._offline:
+            return _UNFETCHED
         payload = self._cache.get(binding.ref)
         if payload is None:
             payload = _fetch(binding.ref)
@@ -885,7 +1099,7 @@ def _resolve_values(
 
     for key, value in string_data.items():
         claim(key)
-        values[key] = SecretValue(value, None)
+        values[key] = SecretValue(value, _INLINE_SOURCE)
 
     for key, value in data.items():
         claim(key)
@@ -893,7 +1107,7 @@ def _resolve_values(
             decoded = base64.b64decode(value, validate=True).decode()
         except (binascii.Error, ValueError, UnicodeDecodeError):
             sys.exit(f"error: Secret '{name}' data key '{key}' is not valid base64")
-        values[key] = SecretValue(decoded, None)
+        values[key] = SecretValue(decoded, _INLINE_SOURCE)
 
     for key, env_var in from_env.items():
         claim(key)
@@ -902,7 +1116,10 @@ def _resolve_values(
                 f"error: Secret '{name}' key '{key}' -> environment variable "
                 f"${env_var} is not set"
             )
-        values[key] = SecretValue(os.environ[env_var], env_var)
+        values[key] = SecretValue(
+            os.environ[env_var],
+            SecretSource(type=SecretSourceType.FROM_ENV, env=env_var),
+        )
 
     # Parse every reference before fetching any, so a typo in the last block
     # fails the run without having reached out to a cloud provider first.
@@ -915,12 +1132,15 @@ def _resolve_values(
             claim(binding.key)
             # Placeholder: reserves the key so a later source collides, and is
             # overwritten with the fetched value below.
-            values[binding.key] = SecretValue("", None)
+            values[binding.key] = SecretValue("", _INLINE_SOURCE)
             bindings.append((provider, binding))
 
     for provider, binding in bindings:
         where = f"Secret '{name}' {provider.value} key '{binding.key}'"
-        values[binding.key] = SecretValue(fetcher.resolve(binding, where), None)
+        values[binding.key] = SecretValue(
+            fetcher.resolve(binding, where),
+            SecretSource(type=provider.source_type, ref=binding.authored),
+        )
 
     return values
 
@@ -941,12 +1161,12 @@ def _write_sealed(
     for field in _AUTHORED_SOURCE_FIELDS:
         spec.pop(field, None)
 
-    encrypted: dict[str, dict[str, str]] = {}
-    for key, resolved in values.items():
-        entry: dict[str, str] = {"ciphertext": transform(resolved.value)}
-        if resolved.from_env:
-            entry["fromEnv"] = resolved.from_env
-        encrypted[key] = entry
+    encrypted = {
+        key: SealedSecretEntry(
+            ciphertext=transform(resolved.value), source=resolved.source
+        ).model_dump(mode="json", exclude_none=True)
+        for key, resolved in values.items()
+    }
     if encrypted:
         spec["encryptedData"] = encrypted
 
@@ -1104,13 +1324,20 @@ def _resolve_token(args: argparse.Namespace, base_url: str) -> str:
     return resp.json()["access_token"]
 
 
-def _apply(base_url: str, token: str, manifest: str) -> dict:
+def _apply(base_url: str, token: str, manifest: str, dry_run: bool) -> dict:
     """Upload the manifest to ``/api/gitops/apply`` and return the JSON report.
+
+    The read timeout is generous because an apply is not just database work: a
+    manifest carrying code agents triggers a security review per agent, each an
+    LLM call. Timing out here would report a failure for an apply the server had
+    already committed, so the client waits longer than the server's own budget
+    for that pass rather than racing it.
 
     Args:
         base_url (str): The instance base URL (no trailing slash).
         token (str): Bearer token.
         manifest (str): The multi-document YAML to apply.
+        dry_run (bool): Ask the server to validate and roll back.
 
     Returns:
         dict: The parsed ``ApplyResponse`` body.
@@ -1123,7 +1350,8 @@ def _apply(base_url: str, token: str, manifest: str) -> dict:
             f"{base_url}/api/gitops/apply",
             headers={"Authorization": f"Bearer {token}"},
             files={"file": ("manifest.yaml", manifest, "application/x-yaml")},
-            timeout=120.0,
+            params={"dry_run": "true"} if dry_run else None,
+            timeout=_APPLY_TIMEOUT_SECONDS,
         )
     except httpx.HTTPError as e:
         sys.exit(f"error: could not reach {base_url}: {e}")
@@ -1134,6 +1362,11 @@ def _apply(base_url: str, token: str, manifest: str) -> dict:
 
 def _print_report(report: dict, use_color: bool) -> bool:
     """Print the per-object summary and return whether the apply was clean.
+
+    Warnings are printed alongside errors. They are the server's only channel
+    for problems it applied *around* — an unresolved model binding, a workflow
+    node whose inputs nothing supplies — and those otherwise surface for the
+    first time at run time, long after the pipeline went green.
 
     Args:
         report (dict): The ``ApplyResponse`` body.
@@ -1146,6 +1379,7 @@ def _print_report(report: dict, use_color: bool) -> bool:
         print(f"  structural error: {err}", file=sys.stderr)
 
     results = report.get("results", [])
+    warnings = 0
     if results:
         width = max(len(r["kind"]) for r in results)
         for r in results:
@@ -1155,14 +1389,40 @@ def _print_report(report: dict, use_color: bool) -> bool:
             print(f"  {r['kind']:<{width}}  {r['name']}  {color}{action}{reset}")
             for err in r.get("errors", []):
                 print(f"      ↳ {err}", file=sys.stderr)
+            for warning in r.get("warnings", []):
+                warnings += 1
+                print(f"      ⚠ {warning}", file=sys.stderr)
+                _annotate(r, warning)
 
     ok = report.get("ok", False)
     changed = sum(1 for r in results if r["action"] in ("created", "updated"))
-    summary = (
-        f"{'OK' if ok else 'FAILED'} — {changed} changed, {len(results)} object(s)"
-    )
-    print(f"\n{summary}")
+    prefix = "OK" if ok else "FAILED"
+    if report.get("dry_run"):
+        prefix = f"{prefix} (dry run, nothing was applied)"
+    parts = [f"{changed} changed", f"{len(results)} object(s)"]
+    if warnings:
+        parts.insert(1, f"{warnings} warning(s)")
+    print(f"\n{prefix} — {', '.join(parts)}")
     return ok
+
+
+def _annotate(result: dict, warning: str) -> None:
+    """Surface a per-object warning as a GitHub Actions annotation.
+
+    A no-op outside GitHub Actions. Inside it, this is what puts the warning on
+    the workflow summary rather than only in the log body, where a green run
+    means nobody scrolls.
+
+    Args:
+        result (dict): The object's result entry.
+        warning (str): The warning text.
+    """
+    if os.environ.get("GITHUB_ACTIONS") != "true":
+        return
+    title = f"{result['kind']} {result['name']}"
+    # Newlines terminate a workflow command, so fold them into the one line.
+    body = " ".join(warning.split())
+    print(f"::warning title={title}::{body}", flush=True)
 
 
 def _parse_args() -> argparse.Namespace:
@@ -1206,7 +1466,20 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Print the manifest that would be uploaded, with secret values elided.",
+        help=(
+            "Print the manifest that would be uploaded, with secret values "
+            "elided, and exit without contacting the server."
+        ),
+    )
+    parser.add_argument(
+        "--plan",
+        action="store_true",
+        help=(
+            "Upload the manifest and report what would change, then have the "
+            "server roll it all back. Unlike --dry-run this validates against "
+            "the real account, so unresolved references and warnings are the "
+            "ones a real apply would produce."
+        ),
     )
     return parser.parse_args()
 
@@ -1246,7 +1519,7 @@ def main() -> None:
         for _, spec in specs
         for provider in CloudProvider
     )
-    fetcher = CloudSecretFetcher()
+    fetcher = CloudSecretFetcher(offline=args.dry_run)
     secrets = [
         (name, spec, _resolve_values(name, spec, fetcher)) for name, spec in specs
     ]
@@ -1256,11 +1529,20 @@ def main() -> None:
 
     key_count = sum(len(values) for _, _, values in secrets)
     env_count = sum(
-        1 for _, _, values in secrets for v in values.values() if v.from_env
+        1
+        for _, _, values in secrets
+        for v in values.values()
+        if v.source.type is SecretSourceType.FROM_ENV
     )
     if env_count:
         print(f"Resolved {env_count} fromEnv secret key(s) locally.", file=sys.stderr)
-    if cloud_count:
+    if cloud_count and args.dry_run:
+        print(
+            f"Checked {cloud_count} cloud secret reference(s); a dry run does not "
+            f"fetch them.",
+            file=sys.stderr,
+        )
+    elif cloud_count:
         print(
             f"Resolved {cloud_count} secret key(s) from cloud secret managers.",
             file=sys.stderr,
@@ -1290,14 +1572,17 @@ def main() -> None:
     if args.no_seal:
         for _, spec, values in secrets:
             _write_inline(spec, values, lambda v: v)
-    else:
+    elif key_count:
+        # Only reached when there is something to seal: a manifest set with no
+        # secret values has no reason to require a sealing-configured instance,
+        # and demanding one would fail applies that never carry key material.
         public_key = _resolve_sealing_key(args.sealing_public_key, base_url, token)
         transform = _seal_transform(public_key)
         for _, spec, values in secrets:
             _write_sealed(spec, values, transform)
 
     manifest = yaml.safe_dump_all(docs, sort_keys=False, default_flow_style=False)
-    report = _apply(base_url, token, manifest)
+    report = _apply(base_url, token, manifest, dry_run=args.plan)
     ok = _print_report(report, use_color=sys.stdout.isatty())
     sys.exit(0 if ok else 1)
 

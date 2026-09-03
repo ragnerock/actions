@@ -1,14 +1,30 @@
 # Endpoint · rank 90 · project-scoped · not foldered.
-# `snapshot: latest` binds to the Snapshot above (whose `endpoint` == this name).
+# Deploys the live Workflow named by `sourceWorkflow`. Snapshots are NOT a
+# GitOps kind: Ragnerock takes one automatically whenever that workflow changes,
+# so pinning the workflow already pins what the endpoint runs.
+#
+# `snapshotTag` (default `latest`) picks which snapshot is served:
+#   latest   the newest snapshot — the endpoint follows the workflow's edits
+#   <tag>    a snapshot promoted with that tag in the app or via the API
+# Referencing a tag nothing carries yet is a warning, not a failed apply: the
+# endpoint keeps serving the version it is on.
+#
+# `returnFields` names the producing Agent, not a node — return fields are keyed
+# by operator, so a workflow using one agent twice still names it once.
 apiVersion: ragnerock.com/v1alpha1
 kind: Endpoint
 metadata:
-  name: sentiment-api
+  name: sentiment_api
   annotations:
-    ragnerock.com/project: alpha-research
+    ragnerock.com/project: alpha_research
 spec:
   description: "Public sentiment scoring endpoint"
-  snapshot: latest
+  sourceWorkflow: filing_pipeline
+  snapshotTag: latest
+  returnFields:
+    - agent: earnings_sentiment
+      field: sentiment
+  includeContent: false
   isEnabled: true
   acceptedFileTypes: [pdf, txt]
   ephemeral: true

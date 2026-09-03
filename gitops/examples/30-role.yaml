@@ -3,6 +3,6 @@
 apiVersion: ragnerock.com/v1alpha1
 kind: Role
 metadata:
-  name: quant-researchers
+  name: quant_researchers
 spec:
   description: "Quant research team"

@@ -3,10 +3,10 @@
 apiVersion: ragnerock.com/v1alpha1
 kind: RoleAssignment
 metadata:
-  name: quant-researchers-binding
+  name: quant_researchers_binding
 spec:
   description: "Who is in the quant research role"
-  role: quant-researchers
+  role: quant_researchers
   members:
     - john@ragnerock.com
     - jane@ragnerock.com

@@ -38,26 +38,33 @@ result. One kind per file (a couple of files carry two closely-related objects).
 | `32-role-assignment.yaml` | RoleAssignment | 32 | account |
 | `40-policy.yaml` | Policy | 40 | account |
 | `42-policy-assignment.yaml` | PolicyAssignment | 42 | account |
-| `50-schema.yaml` | Schema | 50 | project |
-| `60-agent.yaml` | Agent | 60 | project |
+| `50-schema.yaml` | Schema ×3 (output schemas + a memory schema) | 50 | project |
+| `55-skill.yaml` | Skill | 55 | project |
+| `60-agent.yaml` | Agent ×2 (LLM + code) | 60 | project |
 | `70-workflow.yaml` | Workflow | 70 | project |
-| `85-snapshot.yaml` | Snapshot | 85 | project |
 | `90-endpoint.yaml` | Endpoint | 90 | project |
 | `95-ingest-config.yaml` | IngestConfig | 95 | project |
 
 ## Secret sources demonstrated
 
-`00-secrets.yaml` exercises all three secret sources:
+`00-secrets.yaml` exercises all six secret sources:
 
-- **`stringData`** — inline plaintext (`llm-credentials.anthropicApiKey`)
-- **`data`** — inline base64 (`db-credentials.credentials.json`)
-- **`fromEnv`** — resolved from **your** environment client-side and sealed into
-  the upload (`llm-credentials.geminiEmbedKey`, `blob-credentials.aws`,
-  `db-credentials.pgDsn`). Pass `--no-resolve-env` to instead ship `fromEnv`
-  as-is and let the server resolve it from its own environment, so the value
-  never leaves the deployment at all.
+| Source | Example key | Value comes from |
+| --- | --- | --- |
+| `stringData` | `llm_credentials.anthropicApiKey` | inline plaintext |
+| `data` | `db_credentials.credentials.json` | inline base64 |
+| `fromEnv` | `llm_credentials.geminiEmbedKey` | your shell / a CI secret |
+| `fromGcpSecretManager` | `db_credentials.pgDsn` | GCP Secret Manager |
+| `fromAwsSecretsManager` | `blob_credentials.aws` | AWS Secrets Manager |
+| `fromAzureKeyVault` | `llm_credentials.openaiApiKey` | Azure Key Vault (via `jsonField`) |
 
-Every secret-bearing config references these by `secretKeyRef: {name, key}`.
+All six resolve **client-side**, in the applier, and are then sealed to the
+instance's public key. The server resolves none of them — posting a manifest that
+still carries one of these sources directly to `/api/gitops/apply` is refused with
+a pointer back to the applier.
+
+Every secret-bearing config references these by `secretKeyRef: {name, key}`, and
+every key above has a consumer somewhere in the set.
 
 ## Values you must replace before a real apply
 
@@ -65,12 +72,12 @@ Placeholders are marked `REPLACE_ME`. Nothing here validates a live connection o
 apply (values are just encrypted and stored), so the manifest applies as-is — but
 the credentials won't *work* until you substitute real ones:
 
-- `llm-credentials.anthropicApiKey` (stringData) and `GEMINI_EMBED_KEY` (env)
+- `llm_credentials.anthropicApiKey` (stringData) and `GEMINI_EMBED_KEY` (env)
 - the cloud references themselves: the GCP `project`, the Azure `vaultUrl`, and
   the AWS `secretId`/`region` all point at placeholders
-- `db-credentials.credentials.json` (base64 of a real GCP service-account JSON)
+- `db_credentials.credentials.json` (base64 of a real GCP service-account JSON)
 - `10-project.yaml` `owner`, role/policy member emails
-- `sentiment-api` `ipWhitelist`
+- `sentiment_api` `ipWhitelist`
 
 ## Notes / gotchas
 
@@ -78,13 +85,22 @@ the credentials won't *work* until you substitute real ones:
   project-scoped kind to target the account's `Default` project instead.
 - **`Agent.template`** is omitted — set it only if a matching `OperatorTemplate`
   already exists, or apply fails resolving the reference.
+- **Agent kinds**: `60-agent.yaml` shows both an LLM agent (a `generationPrompt`,
+  optionally a `model` block) and a code agent (`operatorKind: code` plus a
+  `codeSource` snippet). `operatorKind` is explicit — absent means `llm` — and the
+  two payloads are mutually exclusive, so a code agent with a prompt (or an LLM
+  agent with a snippet) is rejected. A code agent's snippet is security-reviewed on
+  apply, so keep credentials out of it and reference a `Secret` instead.
 - **Cross-scope secret**: `95-ingest-config.yaml` (project-scoped) references the
-  account-scoped `blob-credentials` Secret — intended per design.
+  account-scoped `blob_credentials` Secret — intended per design.
 - **Bindings are always separate documents**: a `Role`/`Policy` never carries its
   own members/principals. `32-role-assignment.yaml` and `42-policy-assignment.yaml`
   are where the grants live, and a `spec` that inlines them on the role or policy
   is rejected as a structural error. Assignments are additive — applying one never
   removes a binding it omits.
-- **Prereq**: the `Secret` table + IAM-noun-grant migrations must be applied to the
-  target DB (`uv run alembic upgrade head` from `packages/core`) or secret applies
-  fail. The applying user needs `create` on every kind's IAM noun.
+- **`Schema.isMemory`** targets a different namespace, not just a different flag:
+  the row becomes one of the project's `mem_*` memory tables. It is import-only
+  (export never emits memory schemas), it takes no folder, re-applying may only
+  add optional fields to a schema that already holds records, and it needs
+  `create` on the `memory` noun on top of `schema`.
+- The applying user needs `create` on every kind's IAM noun.

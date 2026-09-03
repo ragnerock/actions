@@ -3,11 +3,11 @@
 apiVersion: ragnerock.com/v1alpha1
 kind: PolicyAssignment
 metadata:
-  name: read-only-documents-binding
+  name: read_only_documents_binding
 spec:
-  description: "Who read-only-documents grants to"
-  policy: read-only-documents
+  description: "Who read_only_documents grants to"
+  policy: read_only_documents
   principals:
-    - role:quant-researchers
+    - role:quant_researchers
     - team:research
     - user:john@ragnerock.com

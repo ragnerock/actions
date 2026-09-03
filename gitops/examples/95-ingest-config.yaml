@@ -1,13 +1,12 @@
-# IngestConfig · rank 95 · project-scoped · foldered · secret-bearing.
+# IngestConfig · rank 95 · project-scoped · not foldered · secret-bearing.
 # Project-scoped, but its `s3.credentials` secretKeyRef points at the
-# account-scoped `blob-credentials` Secret — this cross-scope reference is intended.
+# account-scoped `blob_credentials` Secret — this cross-scope reference is intended.
 apiVersion: ragnerock.com/v1alpha1
 kind: IngestConfig
 metadata:
-  name: filings-s3-sync
+  name: filings_s3_sync
   annotations:
-    ragnerock.com/project: alpha-research
-    ragnerock.com/folder: ingestion
+    ragnerock.com/project: alpha_research
 spec:
   description: "Recurring S3 sync of filings"
   sourceType: S3
@@ -26,5 +25,5 @@ spec:
     maxObjectBytes: 52428800
     credentials:
       secretKeyRef:
-        name: blob-credentials
+        name: blob_credentials
         key: aws

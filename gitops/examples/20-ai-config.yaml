@@ -1,10 +1,10 @@
 # AIProviderConfig · rank 20 · account-scoped · secret-bearing.
-# `apiKey` and `embedding.apiKey` are secretKeyRefs into `llm-credentials`.
+# `apiKey` and `embedding.apiKey` are secretKeyRefs into `llm_credentials`.
 # Two configs, so every key of that Secret has a consumer.
 apiVersion: ragnerock.com/v1alpha1
 kind: AIProviderConfig
 metadata:
-  name: anthropic-primary
+  name: anthropic_primary
 spec:
   description: "Primary Anthropic provider"
   providerType: anthropic
@@ -12,7 +12,7 @@ spec:
   modelName: claude-opus-4-8
   apiKey:
     secretKeyRef:
-      name: llm-credentials
+      name: llm_credentials
       key: anthropicApiKey
   fallbackToRagnerock: true
   timeoutSeconds: 120
@@ -26,13 +26,13 @@ spec:
     dimensions: 768
     apiKey:
       secretKeyRef:
-        name: llm-credentials
+        name: llm_credentials
         key: geminiEmbedKey
 ---
 apiVersion: ragnerock.com/v1alpha1
 kind: AIProviderConfig
 metadata:
-  name: openai-secondary
+  name: openai_secondary
 spec:
   description: "Secondary OpenAI provider"
   providerType: openai
@@ -40,8 +40,8 @@ spec:
   modelName: gpt-5
   apiKey:
     secretKeyRef:
-      name: llm-credentials
+      name: llm_credentials
       key: openaiApiKey
   fallbackToRagnerock: false
   timeoutSeconds: 120
-  status: inactive
+  status: disabled

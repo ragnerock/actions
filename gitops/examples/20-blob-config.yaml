@@ -2,7 +2,7 @@
 apiVersion: ragnerock.com/v1alpha1
 kind: BlobProviderConfig
 metadata:
-  name: research-bucket
+  name: research_bucket
 spec:
   description: "S3 bucket for raw filings"
   providerType: s3
@@ -12,7 +12,7 @@ spec:
   active: true
   credentials:
     secretKeyRef:
-      name: blob-credentials
+      name: blob_credentials
       key: aws
   providerConfig:
     endpoint: https://s3.us-east-1.amazonaws.com

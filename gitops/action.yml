@@ -47,7 +47,18 @@ inputs:
     required: false
     default: '.'
   dry-run:
-    description: 'If true, print the manifest that would be applied and exit without contacting the server.'
+    description: >-
+      If true, print the manifest that would be applied and exit without
+      contacting the server. Answers "what would be uploaded"; needs no
+      credentials and no reachable instance. For "what would change", use `plan`.
+    required: false
+    default: 'false'
+  plan:
+    description: >-
+      If true, upload the manifest and report what would change, then have the
+      server roll it back. Validates against the real account, so an unresolved
+      reference or a warning shows up here rather than on the merge. Ignored
+      when `dry-run` is set.
     required: false
     default: 'false'
   seal:
@@ -96,6 +107,7 @@ runs:
         INPUT_REPOSITORY: ${{ inputs.repository }}
         INPUT_DIRECTORY: ${{ inputs.directory }}
         INPUT_DRY_RUN: ${{ inputs.dry-run }}
+        INPUT_PLAN: ${{ inputs.plan }}
         INPUT_SEAL: ${{ inputs.seal }}
         # Multi-line PEM; passed as env so it is never interpolated into the
         # script body. The applier reads it directly.
@@ -114,6 +126,7 @@ runs:
 
         args=("$scan")
         [ "$INPUT_DRY_RUN" = "true" ] && args+=(--dry-run)
+        [ "$INPUT_PLAN" = "true" ] && args+=(--plan)
         [ "$INPUT_SEAL" = "false" ] && args+=(--no-seal)
 
         uv run "$GITHUB_ACTION_PATH/gitops_apply.py" "${args[@]}"

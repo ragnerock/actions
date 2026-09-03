@@ -2,12 +2,17 @@
 # `schema` references the Schema above (must exist in the same project).
 # `template` (an OperatorTemplate name) is optional and omitted here — set it only
 # if a matching template exists, or apply will fail resolving the reference.
+# `model` picks the provider this agent runs on, by config name — omit the whole
+# block to use the account default. It never carries credentials.
+# `skills` references Skills (see `55-skill.yaml`) by name — LLM agents only;
+# every listed skill must exist in the project, and an absent list clears the
+# agent's selection (a manifest is the whole desired state).
 apiVersion: ragnerock.com/v1alpha1
 kind: Agent
 metadata:
-  name: earnings-sentiment
+  name: earnings_sentiment
   annotations:
-    ragnerock.com/project: alpha-research
+    ragnerock.com/project: alpha_research
     ragnerock.com/folder: agents
 spec:
   description: "Extracts sentiment from earnings calls"
@@ -15,4 +20,40 @@ spec:
   chunkType: paragraph
   batchSize: 50
   multiAnnotation: false
-  schema: sentiment-score
+  schema: sentiment_score
+  model:
+    configName: anthropic_primary
+    providerType: anthropic
+    modelName: claude-opus-4-8
+  skills:
+    - earnings_call_tone
+---
+# The same kind with `operatorKind: code` declares a *code* agent: instead of a
+# prompt it carries a Python snippet, run in the sandboxed python-service. The
+# snippet must define a top-level `main()`, and every parameter it declares has
+# to be suppliable: `content`/`metadata` are reserved, and anything else must
+# name an upstream node's agent or a workflow resource (an apply warns when one
+# cannot resolve). `generationPrompt` and `model` are LLM-only and are rejected
+# here — the kind is explicit, never guessed from what is filled in.
+#
+# An apply sends this code through the same security review the operator editor
+# runs. Never put credentials in `codeSource`; use a Secret.
+apiVersion: ragnerock.com/v1alpha1
+kind: Agent
+metadata:
+  name: extract_tickers
+  annotations:
+    ragnerock.com/project: alpha_research
+    ragnerock.com/folder: agents
+spec:
+  description: "Pulls ticker-shaped tokens out of a passage — no LLM call"
+  operatorKind: code
+  chunkType: paragraph
+  schema: ticker_mentions
+  codeSource: |
+    def main(content: str) -> dict:
+        """Return the upper-case tokens that look like ticker symbols."""
+        tickers = sorted(
+            {word.strip(".,;:()") for word in content.split() if word.isupper()}
+        )
+        return {"tickers": tickers}
