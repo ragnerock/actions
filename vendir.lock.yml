@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: Fix failing test (#402)
-      sha: bafd5f03a44cd04938a846327759286cb58146de
+      commitTitle: Fix failing test (#410)
+      sha: d79de1cd843a4dfe68b7f8c33fb4feb3942f469e
       tags:
-      - v2026.09.08
+      - v2026.09.12
     path: .
   path: gitops
 - contents:
   - git:
-      commitTitle: Fix failing test (#402)
-      sha: bafd5f03a44cd04938a846327759286cb58146de
+      commitTitle: Fix failing test (#410)
+      sha: d79de1cd843a4dfe68b7f8c33fb4feb3942f469e
       tags:
-      - v2026.09.08
+      - v2026.09.12
     path: .
   path: .github/workflows
 - contents:
   - git:
-      commitTitle: Fix failing test (#402)
-      sha: bafd5f03a44cd04938a846327759286cb58146de
+      commitTitle: Fix failing test (#410)
+      sha: d79de1cd843a4dfe68b7f8c33fb4feb3942f469e
       tags:
-      - v2026.09.08
+      - v2026.09.12
     path: .
   path: .vendir-staging/root
 kind: LockConfig
