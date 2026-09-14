@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: Fix failing test (#410)
-      sha: d79de1cd843a4dfe68b7f8c33fb4feb3942f469e
+      commitTitle: Performance improvements to handle large jobs (#411)...
+      sha: c3aa0afd31953388cb9452685394f1281752854b
       tags:
-      - v2026.09.12
+      - v2026.09.14
     path: .
   path: gitops
 - contents:
   - git:
-      commitTitle: Fix failing test (#410)
-      sha: d79de1cd843a4dfe68b7f8c33fb4feb3942f469e
+      commitTitle: Performance improvements to handle large jobs (#411)...
+      sha: c3aa0afd31953388cb9452685394f1281752854b
       tags:
-      - v2026.09.12
+      - v2026.09.14
     path: .
   path: .github/workflows
 - contents:
   - git:
-      commitTitle: Fix failing test (#410)
-      sha: d79de1cd843a4dfe68b7f8c33fb4feb3942f469e
+      commitTitle: Performance improvements to handle large jobs (#411)...
+      sha: c3aa0afd31953388cb9452685394f1281752854b
       tags:
-      - v2026.09.12
+      - v2026.09.14
     path: .
   path: .vendir-staging/root
 kind: LockConfig
