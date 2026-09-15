@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve python-service issue (#414)...'
-      sha: 3fd219d97732cfe75687456aa38991d8ebe9b7c4
+      commitTitle: 'FIX: Resolve k1x issues (#416)...'
+      sha: 34c6f973135faf4f67966f914530a9123b80eb3c
       tags:
-      - v2026.09.14-2
+      - v2026.09.15
     path: .
   path: gitops
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve python-service issue (#414)...'
-      sha: 3fd219d97732cfe75687456aa38991d8ebe9b7c4
+      commitTitle: 'FIX: Resolve k1x issues (#416)...'
+      sha: 34c6f973135faf4f67966f914530a9123b80eb3c
       tags:
-      - v2026.09.14-2
+      - v2026.09.15
     path: .
   path: .github/workflows
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve python-service issue (#414)...'
-      sha: 3fd219d97732cfe75687456aa38991d8ebe9b7c4
+      commitTitle: 'FIX: Resolve k1x issues (#416)...'
+      sha: 34c6f973135faf4f67966f914530a9123b80eb3c
       tags:
-      - v2026.09.14-2
+      - v2026.09.15
     path: .
   path: .vendir-staging/root
 kind: LockConfig
