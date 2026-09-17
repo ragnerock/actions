@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: Support CTEs (#418)...
-      sha: 72a7ae0e64d49f06609606739ae5909247f7fa6a
+      commitTitle: 'FIX: Resolve 8192 input length issue (#420)...'
+      sha: fdb783c0c49ecc5b7b2f0f6cef20592c31092cd5
       tags:
-      - v2026.09.16
+      - v2026.09.17
     path: .
   path: gitops
 - contents:
   - git:
-      commitTitle: Support CTEs (#418)...
-      sha: 72a7ae0e64d49f06609606739ae5909247f7fa6a
+      commitTitle: 'FIX: Resolve 8192 input length issue (#420)...'
+      sha: fdb783c0c49ecc5b7b2f0f6cef20592c31092cd5
       tags:
-      - v2026.09.16
+      - v2026.09.17
     path: .
   path: .github/workflows
 - contents:
   - git:
-      commitTitle: Support CTEs (#418)...
-      sha: 72a7ae0e64d49f06609606739ae5909247f7fa6a
+      commitTitle: 'FIX: Resolve 8192 input length issue (#420)...'
+      sha: fdb783c0c49ecc5b7b2f0f6cef20592c31092cd5
       tags:
-      - v2026.09.16
+      - v2026.09.17
     path: .
   path: .vendir-staging/root
 kind: LockConfig
