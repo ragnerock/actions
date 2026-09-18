@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve 8192 input length issue (#420)...'
-      sha: fdb783c0c49ecc5b7b2f0f6cef20592c31092cd5
+      commitTitle: Query layer performance (#423)...
+      sha: 3299e053da9398ec116e80b905d3cabb48c823ac
       tags:
-      - v2026.09.17
+      - v2026.09.18
     path: .
   path: gitops
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve 8192 input length issue (#420)...'
-      sha: fdb783c0c49ecc5b7b2f0f6cef20592c31092cd5
+      commitTitle: Query layer performance (#423)...
+      sha: 3299e053da9398ec116e80b905d3cabb48c823ac
       tags:
-      - v2026.09.17
+      - v2026.09.18
     path: .
   path: .github/workflows
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve 8192 input length issue (#420)...'
-      sha: fdb783c0c49ecc5b7b2f0f6cef20592c31092cd5
+      commitTitle: Query layer performance (#423)...
+      sha: 3299e053da9398ec116e80b905d3cabb48c823ac
       tags:
-      - v2026.09.17
+      - v2026.09.18
     path: .
   path: .vendir-staging/root
 kind: LockConfig
