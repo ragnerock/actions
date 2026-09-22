@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve test failures (#430)'
-      sha: 0e968a570c240698fe059d07baa5f0974a61376b
+      commitTitle: 'FIX: Resolve prod deploy issue (#432)'
+      sha: 3122198222266c9c7b3e1741da8afb094bee06c6
       tags:
-      - v2026.09.22
+      - v2026.09.22-2
     path: .
   path: gitops
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve test failures (#430)'
-      sha: 0e968a570c240698fe059d07baa5f0974a61376b
+      commitTitle: 'FIX: Resolve prod deploy issue (#432)'
+      sha: 3122198222266c9c7b3e1741da8afb094bee06c6
       tags:
-      - v2026.09.22
+      - v2026.09.22-2
     path: .
   path: .github/workflows
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve test failures (#430)'
-      sha: 0e968a570c240698fe059d07baa5f0974a61376b
+      commitTitle: 'FIX: Resolve prod deploy issue (#432)'
+      sha: 3122198222266c9c7b3e1741da8afb094bee06c6
       tags:
-      - v2026.09.22
+      - v2026.09.22-2
     path: .
   path: .vendir-staging/root
 kind: LockConfig
