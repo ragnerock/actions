@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: Query layer performance (#423)...
-      sha: 3299e053da9398ec116e80b905d3cabb48c823ac
+      commitTitle: 'FIX: Resolve test failures (#430)'
+      sha: 0e968a570c240698fe059d07baa5f0974a61376b
       tags:
-      - v2026.09.18
+      - v2026.09.22
     path: .
   path: gitops
 - contents:
   - git:
-      commitTitle: Query layer performance (#423)...
-      sha: 3299e053da9398ec116e80b905d3cabb48c823ac
+      commitTitle: 'FIX: Resolve test failures (#430)'
+      sha: 0e968a570c240698fe059d07baa5f0974a61376b
       tags:
-      - v2026.09.18
+      - v2026.09.22
     path: .
   path: .github/workflows
 - contents:
   - git:
-      commitTitle: Query layer performance (#423)...
-      sha: 3299e053da9398ec116e80b905d3cabb48c823ac
+      commitTitle: 'FIX: Resolve test failures (#430)'
+      sha: 0e968a570c240698fe059d07baa5f0974a61376b
       tags:
-      - v2026.09.18
+      - v2026.09.22
     path: .
   path: .vendir-staging/root
 kind: LockConfig
