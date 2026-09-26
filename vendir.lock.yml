@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve prod deploy issue (#432)'
-      sha: 3122198222266c9c7b3e1741da8afb094bee06c6
+      commitTitle: Fix DDL merge issue (#441)
+      sha: 3a219b27eb5684492e687158e6cb33986807fa9f
       tags:
-      - v2026.09.22-2
+      - v2026.09.26
     path: .
   path: gitops
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve prod deploy issue (#432)'
-      sha: 3122198222266c9c7b3e1741da8afb094bee06c6
+      commitTitle: Fix DDL merge issue (#441)
+      sha: 3a219b27eb5684492e687158e6cb33986807fa9f
       tags:
-      - v2026.09.22-2
+      - v2026.09.26
     path: .
   path: .github/workflows
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve prod deploy issue (#432)'
-      sha: 3122198222266c9c7b3e1741da8afb094bee06c6
+      commitTitle: Fix DDL merge issue (#441)
+      sha: 3a219b27eb5684492e687158e6cb33986807fa9f
       tags:
-      - v2026.09.22-2
+      - v2026.09.26
     path: .
   path: .vendir-staging/root
 kind: LockConfig
