@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: Fix DDL merge issue (#441)
-      sha: 3a219b27eb5684492e687158e6cb33986807fa9f
+      commitTitle: Remove stale document metadata agent (#444)
+      sha: 295520a399974a2431e0096cc3eb4548ba23eb55
       tags:
-      - v2026.09.26
+      - v2026.09.28
     path: .
   path: gitops
 - contents:
   - git:
-      commitTitle: Fix DDL merge issue (#441)
-      sha: 3a219b27eb5684492e687158e6cb33986807fa9f
+      commitTitle: Remove stale document metadata agent (#444)
+      sha: 295520a399974a2431e0096cc3eb4548ba23eb55
       tags:
-      - v2026.09.26
+      - v2026.09.28
     path: .
   path: .github/workflows
 - contents:
   - git:
-      commitTitle: Fix DDL merge issue (#441)
-      sha: 3a219b27eb5684492e687158e6cb33986807fa9f
+      commitTitle: Remove stale document metadata agent (#444)
+      sha: 295520a399974a2431e0096cc3eb4548ba23eb55
       tags:
-      - v2026.09.26
+      - v2026.09.28
     path: .
   path: .vendir-staging/root
 kind: LockConfig
