@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: Remove stale document metadata agent (#444)
-      sha: 295520a399974a2431e0096cc3eb4548ba23eb55
+      commitTitle: 'ENH: Various fixes and such (#446)...'
+      sha: 3cd58fd3b87914da57bc32bc6b82fa33edcf945a
       tags:
-      - v2026.09.28
+      - v2026.09.29
     path: .
   path: gitops
 - contents:
   - git:
-      commitTitle: Remove stale document metadata agent (#444)
-      sha: 295520a399974a2431e0096cc3eb4548ba23eb55
+      commitTitle: 'ENH: Various fixes and such (#446)...'
+      sha: 3cd58fd3b87914da57bc32bc6b82fa33edcf945a
       tags:
-      - v2026.09.28
+      - v2026.09.29
     path: .
   path: .github/workflows
 - contents:
   - git:
-      commitTitle: Remove stale document metadata agent (#444)
-      sha: 295520a399974a2431e0096cc3eb4548ba23eb55
+      commitTitle: 'ENH: Various fixes and such (#446)...'
+      sha: 3cd58fd3b87914da57bc32bc6b82fa33edcf945a
       tags:
-      - v2026.09.28
+      - v2026.09.29
     path: .
   path: .vendir-staging/root
 kind: LockConfig
