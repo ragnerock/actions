@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ENH: Various fixes and such (#446)...'
-      sha: 3cd58fd3b87914da57bc32bc6b82fa33edcf945a
+      commitTitle: Address GHSA-vcvr-r3jv-pc5j (#450)
+      sha: add7b68b1d55460c6247c83ae4f355c5c8fbbe7c
       tags:
-      - v2026.09.29
+      - v2026.10.01
     path: .
   path: gitops
 - contents:
   - git:
-      commitTitle: 'ENH: Various fixes and such (#446)...'
-      sha: 3cd58fd3b87914da57bc32bc6b82fa33edcf945a
+      commitTitle: Address GHSA-vcvr-r3jv-pc5j (#450)
+      sha: add7b68b1d55460c6247c83ae4f355c5c8fbbe7c
       tags:
-      - v2026.09.29
+      - v2026.10.01
     path: .
   path: .github/workflows
 - contents:
   - git:
-      commitTitle: 'ENH: Various fixes and such (#446)...'
-      sha: 3cd58fd3b87914da57bc32bc6b82fa33edcf945a
+      commitTitle: Address GHSA-vcvr-r3jv-pc5j (#450)
+      sha: add7b68b1d55460c6247c83ae4f355c5c8fbbe7c
       tags:
-      - v2026.09.29
+      - v2026.10.01
     path: .
   path: .vendir-staging/root
 kind: LockConfig
