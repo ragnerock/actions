@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: Update ToS and links (#452)...
-      sha: b675cbdd0bdf95dd150e0867a86aa40ce2aa4f15
+      commitTitle: 'FIX: Resolve wizard issues (#453)...'
+      sha: 388e1c0b222d7f9c1fecb119722ff6f789b65472
       tags:
-      - v2026.10.02
+      - v2026.10.02-2
     path: .
   path: gitops
 - contents:
   - git:
-      commitTitle: Update ToS and links (#452)...
-      sha: b675cbdd0bdf95dd150e0867a86aa40ce2aa4f15
+      commitTitle: 'FIX: Resolve wizard issues (#453)...'
+      sha: 388e1c0b222d7f9c1fecb119722ff6f789b65472
       tags:
-      - v2026.10.02
+      - v2026.10.02-2
     path: .
   path: .github/workflows
 - contents:
   - git:
-      commitTitle: Update ToS and links (#452)...
-      sha: b675cbdd0bdf95dd150e0867a86aa40ce2aa4f15
+      commitTitle: 'FIX: Resolve wizard issues (#453)...'
+      sha: 388e1c0b222d7f9c1fecb119722ff6f789b65472
       tags:
-      - v2026.10.02
+      - v2026.10.02-2
     path: .
   path: .vendir-staging/root
 kind: LockConfig
