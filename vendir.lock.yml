@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve wizard issues (#453)...'
-      sha: 388e1c0b222d7f9c1fecb119722ff6f789b65472
+      commitTitle: 'ENH: Add auth secret to callback-delivery and data-ingestor (#458)...'
+      sha: c26172190345804e36193052dcd862d4e6e1f02d
       tags:
-      - v2026.10.02-2
+      - v2026.10.06
     path: .
   path: gitops
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve wizard issues (#453)...'
-      sha: 388e1c0b222d7f9c1fecb119722ff6f789b65472
+      commitTitle: 'ENH: Add auth secret to callback-delivery and data-ingestor (#458)...'
+      sha: c26172190345804e36193052dcd862d4e6e1f02d
       tags:
-      - v2026.10.02-2
+      - v2026.10.06
     path: .
   path: .github/workflows
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve wizard issues (#453)...'
-      sha: 388e1c0b222d7f9c1fecb119722ff6f789b65472
+      commitTitle: 'ENH: Add auth secret to callback-delivery and data-ingestor (#458)...'
+      sha: c26172190345804e36193052dcd862d4e6e1f02d
       tags:
-      - v2026.10.02-2
+      - v2026.10.06
     path: .
   path: .vendir-staging/root
 kind: LockConfig
