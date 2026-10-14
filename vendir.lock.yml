@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ENH: Add auth secret to callback-delivery and data-ingestor (#458)...'
-      sha: c26172190345804e36193052dcd862d4e6e1f02d
+      commitTitle: 'FIX: Resolve failing db-service in local labs (#464)'
+      sha: 55c4b1696df648d4351ca9f4e67e6786249ef04c
       tags:
-      - v2026.10.06
+      - v2026.10.14
     path: .
   path: gitops
 - contents:
   - git:
-      commitTitle: 'ENH: Add auth secret to callback-delivery and data-ingestor (#458)...'
-      sha: c26172190345804e36193052dcd862d4e6e1f02d
+      commitTitle: 'FIX: Resolve failing db-service in local labs (#464)'
+      sha: 55c4b1696df648d4351ca9f4e67e6786249ef04c
       tags:
-      - v2026.10.06
+      - v2026.10.14
     path: .
   path: .github/workflows
 - contents:
   - git:
-      commitTitle: 'ENH: Add auth secret to callback-delivery and data-ingestor (#458)...'
-      sha: c26172190345804e36193052dcd862d4e6e1f02d
+      commitTitle: 'FIX: Resolve failing db-service in local labs (#464)'
+      sha: 55c4b1696df648d4351ca9f4e67e6786249ef04c
       tags:
-      - v2026.10.06
+      - v2026.10.14
     path: .
   path: .vendir-staging/root
 kind: LockConfig
