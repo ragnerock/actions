@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve failing db-service in local labs (#464)'
-      sha: 55c4b1696df648d4351ca9f4e67e6786249ef04c
+      commitTitle: Account lifecycle (#457)...
+      sha: 45e1ef92977e6440759d3869e5f01c527eeb9671
       tags:
-      - v2026.10.14
+      - v2026.10.17
     path: .
   path: gitops
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve failing db-service in local labs (#464)'
-      sha: 55c4b1696df648d4351ca9f4e67e6786249ef04c
+      commitTitle: Account lifecycle (#457)...
+      sha: 45e1ef92977e6440759d3869e5f01c527eeb9671
       tags:
-      - v2026.10.14
+      - v2026.10.17
     path: .
   path: .github/workflows
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve failing db-service in local labs (#464)'
-      sha: 55c4b1696df648d4351ca9f4e67e6786249ef04c
+      commitTitle: Account lifecycle (#457)...
+      sha: 45e1ef92977e6440759d3869e5f01c527eeb9671
       tags:
-      - v2026.10.14
+      - v2026.10.17
     path: .
   path: .vendir-staging/root
 kind: LockConfig
