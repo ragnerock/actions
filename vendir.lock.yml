@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: Account lifecycle (#457)...
-      sha: 45e1ef92977e6440759d3869e5f01c527eeb9671
+      commitTitle: 'MAINT: Bump Helm chart version (#485)'
+      sha: f6180683fdd091c6c73235cbe5d92f2f6b555706
       tags:
-      - v2026.10.17
+      - v2026.10.23
     path: .
   path: gitops
 - contents:
   - git:
-      commitTitle: Account lifecycle (#457)...
-      sha: 45e1ef92977e6440759d3869e5f01c527eeb9671
+      commitTitle: 'MAINT: Bump Helm chart version (#485)'
+      sha: f6180683fdd091c6c73235cbe5d92f2f6b555706
       tags:
-      - v2026.10.17
+      - v2026.10.23
     path: .
   path: .github/workflows
 - contents:
   - git:
-      commitTitle: Account lifecycle (#457)...
-      sha: 45e1ef92977e6440759d3869e5f01c527eeb9671
+      commitTitle: 'MAINT: Bump Helm chart version (#485)'
+      sha: f6180683fdd091c6c73235cbe5d92f2f6b555706
       tags:
-      - v2026.10.17
+      - v2026.10.23
     path: .
   path: .vendir-staging/root
 kind: LockConfig
