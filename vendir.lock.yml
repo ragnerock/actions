@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'MAINT: Bump Helm chart version (#485)'
-      sha: f6180683fdd091c6c73235cbe5d92f2f6b555706
+      commitTitle: 'FIX: Resolve security scan issue (#491)'
+      sha: 17036ccfcd58f1aa17b22cefb89ae7b13f92ba36
       tags:
-      - v2026.10.23
+      - v2026.10.26
     path: .
   path: gitops
 - contents:
   - git:
-      commitTitle: 'MAINT: Bump Helm chart version (#485)'
-      sha: f6180683fdd091c6c73235cbe5d92f2f6b555706
+      commitTitle: 'FIX: Resolve security scan issue (#491)'
+      sha: 17036ccfcd58f1aa17b22cefb89ae7b13f92ba36
       tags:
-      - v2026.10.23
+      - v2026.10.26
     path: .
   path: .github/workflows
 - contents:
   - git:
-      commitTitle: 'MAINT: Bump Helm chart version (#485)'
-      sha: f6180683fdd091c6c73235cbe5d92f2f6b555706
+      commitTitle: 'FIX: Resolve security scan issue (#491)'
+      sha: 17036ccfcd58f1aa17b22cefb89ae7b13f92ba36
       tags:
-      - v2026.10.23
+      - v2026.10.26
     path: .
   path: .vendir-staging/root
 kind: LockConfig
