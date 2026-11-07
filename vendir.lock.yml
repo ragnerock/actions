@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve security scan issue (#491)'
-      sha: 17036ccfcd58f1aa17b22cefb89ae7b13f92ba36
+      commitTitle: Shrink memory footprint (#534)
+      sha: 14fa4842cc71d2e08a141ffaa000a313c1901f8e
       tags:
-      - v2026.10.26
+      - v2026.11.07
     path: .
   path: gitops
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve security scan issue (#491)'
-      sha: 17036ccfcd58f1aa17b22cefb89ae7b13f92ba36
+      commitTitle: Shrink memory footprint (#534)
+      sha: 14fa4842cc71d2e08a141ffaa000a313c1901f8e
       tags:
-      - v2026.10.26
+      - v2026.11.07
     path: .
   path: .github/workflows
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve security scan issue (#491)'
-      sha: 17036ccfcd58f1aa17b22cefb89ae7b13f92ba36
+      commitTitle: Shrink memory footprint (#534)
+      sha: 14fa4842cc71d2e08a141ffaa000a313c1901f8e
       tags:
-      - v2026.10.26
+      - v2026.11.07
     path: .
   path: .vendir-staging/root
 kind: LockConfig
