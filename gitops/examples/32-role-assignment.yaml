@@ -1,6 +1,6 @@
 # RoleAssignment · rank 32 · account-scoped. `role` references the Role above.
 # This is the only place a role's members and teams are expressed.
-apiVersion: ragnerock.com/v1alpha1
+apiVersion: ragnerock.com/v1alpha2
 kind: RoleAssignment
 metadata:
   name: quant_researchers_binding

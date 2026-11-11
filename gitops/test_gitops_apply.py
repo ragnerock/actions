@@ -69,7 +69,7 @@ def key() -> rsa.RSAPrivateKey:
 def _secret_doc(spec: dict[str, Any]) -> dict[str, Any]:
     """Build a ``Secret`` manifest document around a spec."""
     return {
-        "apiVersion": "ragnerock.com/v1alpha1",
+        "apiVersion": "ragnerock.com/v1alpha2",
         "kind": "Secret",
         "metadata": {"name": "creds"},
         "spec": spec,
@@ -387,7 +387,7 @@ def test_resolves_every_source(monkeypatch: pytest.MonkeyPatch) -> None:
             ref={"vaultUrl": "https://v.vault.azure.net", "secret": "s"},
         ),
     )
-    # Resolution reads the spec; rewriting it is the write step's job.
+    # Resolution reads the spec; rewriting it is the write step's run.
     assert set(spec) == set(applier._AUTHORED_SOURCE_FIELDS)
 
 
@@ -647,7 +647,7 @@ def test_dry_run_elides_values(monkeypatch: pytest.MonkeyPatch, write: str) -> N
     """A dry run prints the upload shape without any secret material.
 
     This is the leak the previous implementation had: it resolved ``fromEnv`` and
-    printed the result straight into the workflow log.
+    printed the result straight into the agent log.
     """
     monkeypatch.setenv("SOME_VAR", "env-secret-value")
     spec: dict[str, Any] = {
@@ -697,7 +697,7 @@ def test_mask_skips_short_values(
 def test_mask_is_a_noop_outside_actions(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    """Workflow commands are meaningless on a developer's terminal."""
+    """Agent commands are meaningless on a developer's terminal."""
     monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
 
     applier._mask("a-real-looking-secret")
@@ -715,8 +715,8 @@ def test_only_secret_documents_are_rewritten() -> None:
     docs = [
         _secret_doc({"stringData": {"a": "v"}}),
         {
-            "apiVersion": "ragnerock.com/v1alpha1",
-            "kind": "Agent",
+            "apiVersion": "ragnerock.com/v1alpha2",
+            "kind": "Task",
             "metadata": {"name": "scorer"},
             "spec": {"generationPrompt": "go"},
         },
@@ -741,8 +741,8 @@ def test_manifest_without_secret_values_never_asks_for_a_sealing_key(
     (tmp_path / "manifest.yaml").write_text(
         yaml.safe_dump(
             {
-                "apiVersion": "ragnerock.com/v1alpha1",
-                "kind": "Agent",
+                "apiVersion": "ragnerock.com/v1alpha2",
+                "kind": "Task",
                 "metadata": {"name": "scorer"},
                 "spec": {"generationPrompt": "go"},
             }
@@ -837,7 +837,7 @@ def test_seal_format_tokens_match_the_sdk() -> None:
 def test_fingerprint_matches_the_sdk(key: rsa.RSAPrivateKey) -> None:
     """A pinned key's fingerprint must be the one the instance reports for it.
 
-    The fingerprint is what an operator compares across the two sides, so a
+    The fingerprint is what a task compares across the two sides, so a
     difference in how it is computed would read as a swapped key.
     """
     public_key = key.public_key()

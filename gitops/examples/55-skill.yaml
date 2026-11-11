@@ -3,9 +3,9 @@
 # The description is the discovery text — agents decide from it *when* to load
 # the skill, so write it as "when to use this", not just what it is. The body
 # is the markdown returned by `load_skill`. Agents reference skills by name
-# (see `60-agent.yaml`); skills apply before agents, so one manifest can carry
+# (see `60-task.yaml`); skills apply before agents, so one manifest can carry
 # both. `isAvailable: false` parks a skill without unlinking it from agents.
-apiVersion: ragnerock.com/v1alpha1
+apiVersion: ragnerock.com/v1alpha2
 kind: Skill
 metadata:
   name: earnings_call_tone

@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: Shrink memory footprint (#534)
-      sha: 14fa4842cc71d2e08a141ffaa000a313c1901f8e
+      commitTitle: Resolve runaway parsing issues (#537)...
+      sha: fab4e8ccbd38d9cf760c079dcbb14f1d9be9a3e2
       tags:
-      - v2026.11.07
+      - v2026.11.11
     path: .
   path: gitops
 - contents:
   - git:
-      commitTitle: Shrink memory footprint (#534)
-      sha: 14fa4842cc71d2e08a141ffaa000a313c1901f8e
+      commitTitle: Resolve runaway parsing issues (#537)...
+      sha: fab4e8ccbd38d9cf760c079dcbb14f1d9be9a3e2
       tags:
-      - v2026.11.07
+      - v2026.11.11
     path: .
   path: .github/workflows
 - contents:
   - git:
-      commitTitle: Shrink memory footprint (#534)
-      sha: 14fa4842cc71d2e08a141ffaa000a313c1901f8e
+      commitTitle: Resolve runaway parsing issues (#537)...
+      sha: fab4e8ccbd38d9cf760c079dcbb14f1d9be9a3e2
       tags:
-      - v2026.11.07
+      - v2026.11.11
     path: .
   path: .vendir-staging/root
 kind: LockConfig

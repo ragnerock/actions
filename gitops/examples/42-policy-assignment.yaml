@@ -1,6 +1,6 @@
 # PolicyAssignment · rank 42 · account-scoped. `policy` references the Policy above.
 # This is the only place a policy's principals are expressed.
-apiVersion: ragnerock.com/v1alpha1
+apiVersion: ragnerock.com/v1alpha2
 kind: PolicyAssignment
 metadata:
   name: read_only_documents_binding

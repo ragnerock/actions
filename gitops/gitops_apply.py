@@ -343,7 +343,7 @@ def _is_ragnerock_doc(doc: object) -> bool:
     """Return whether a parsed YAML document is a Ragnerock manifest.
 
     A Ragnerock manifest is a mapping whose ``apiVersion`` is a string in the
-    ``ragnerock.com/`` API group (e.g. ``ragnerock.com/v1alpha1``). Everything
+    ``ragnerock.com/`` API group (e.g. ``ragnerock.com/v1alpha2``). Everything
     else encountered while walking a repository is ignored.
 
     Args:

@@ -1,11 +1,11 @@
-# Workflow · rank 70 · project-scoped · foldered.
-# Each node's `agent` must reference an Agent in the same project. The first two
+# Agent · rank 70 · project-scoped · foldered.
+# Each node's `task` must reference a Task in the same project. The first two
 # nodes use `earnings_sentiment`; the second demonstrates `dependsOn` + `condition`.
-# The third binds the *code* agent from `60-agent.yaml` — LLM and code agents are
+# The third binds the *code* agent from `60-task.yaml` — LLM and code agents are
 # nodes of the same kind of DAG and are wired identically. The first node also
 # carries a `decorators` block (workflow-decorators §10).
-apiVersion: ragnerock.com/v1alpha1
-kind: Workflow
+apiVersion: ragnerock.com/v1alpha2
+kind: Agent
 metadata:
   name: filing_pipeline
   annotations:
@@ -17,14 +17,14 @@ spec:
   autoRunOnUpload: true
   nodes:
     - name: sentiment
-      agent: earnings_sentiment
+      task: earnings_sentiment
       persist: true
       onError: retry
       maxRetries: 3
       position: {x: 100, y: 200, z: 0}
       # Node decorators wrap this node's execution (workflow-decorators §10).
       # They reuse the decorator YAML dialect: snake_case keys and lowercase
-      # enum tokens (like `onError: fail_job`), distinct from the camelCase of
+      # enum tokens (like `onError: fail_run`), distinct from the camelCase of
       # the surrounding node fields. An embedded `model:` binds an AI config by
       # name within this project's account, like an agent's own `model` block.
       decorators:
@@ -45,7 +45,7 @@ spec:
               config_name: anthropic_primary
               provider_type: anthropic
     - name: recheck
-      agent: earnings_sentiment
+      task: earnings_sentiment
       persist: true
       onError: skip_node
       dependsOn: [sentiment]
@@ -61,7 +61,7 @@ spec:
         operator: "=="
         value: negative
     - name: tickers
-      agent: extract_tickers
+      task: extract_tickers
       persist: true
       onError: skip_node
       position: {x: 100, y: 400, z: 0}

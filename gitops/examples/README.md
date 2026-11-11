@@ -40,8 +40,8 @@ result. One kind per file (a couple of files carry two closely-related objects).
 | `42-policy-assignment.yaml` | PolicyAssignment | 42 | account |
 | `50-schema.yaml` | Schema ×3 (output schemas + a memory schema) | 50 | project |
 | `55-skill.yaml` | Skill | 55 | project |
-| `60-agent.yaml` | Agent ×2 (LLM + code) | 60 | project |
-| `70-workflow.yaml` | Workflow | 70 | project |
+| `60-task.yaml` | Task ×2 (LLM + code) | 60 | project |
+| `70-agent.yaml` | Agent | 70 | project |
 | `90-endpoint.yaml` | Endpoint | 90 | project |
 | `95-ingest-config.yaml` | IngestConfig | 95 | project |
 
@@ -83,11 +83,11 @@ the credentials won't *work* until you substitute real ones:
 
 - **`Default` project**: drop the `ragnerock.com/project` annotation from any
   project-scoped kind to target the account's `Default` project instead.
-- **`Agent.template`** is omitted — set it only if a matching `OperatorTemplate`
+- **`Task.template`** is omitted — set it only if a matching `TaskTemplate`
   already exists, or apply fails resolving the reference.
-- **Agent kinds**: `60-agent.yaml` shows both an LLM agent (a `generationPrompt`,
-  optionally a `model` block) and a code agent (`operatorKind: code` plus a
-  `codeSource` snippet). `operatorKind` is explicit — absent means `llm` — and the
+- **Task kinds**: `60-task.yaml` shows both an LLM agent (a `generationPrompt`,
+  optionally a `model` block) and a code agent (`taskKind: code` plus a
+  `codeSource` snippet). `taskKind` is explicit — absent means `llm` — and the
   two payloads are mutually exclusive, so a code agent with a prompt (or an LLM
   agent with a snippet) is rejected. A code agent's snippet is security-reviewed on
   apply, so keep credentials out of it and reference a `Secret` instead.

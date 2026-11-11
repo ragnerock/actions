@@ -1,7 +1,7 @@
 # AIProviderConfig · rank 20 · account-scoped · secret-bearing.
 # `apiKey` and `embedding.apiKey` are secretKeyRefs into `llm_credentials`.
 # Two configs, so every key of that Secret has a consumer.
-apiVersion: ragnerock.com/v1alpha1
+apiVersion: ragnerock.com/v1alpha2
 kind: AIProviderConfig
 metadata:
   name: anthropic_primary
@@ -29,7 +29,7 @@ spec:
         name: llm_credentials
         key: geminiEmbedKey
 ---
-apiVersion: ragnerock.com/v1alpha1
+apiVersion: ragnerock.com/v1alpha2
 kind: AIProviderConfig
 metadata:
   name: openai_secondary

@@ -96,7 +96,7 @@ login action, then run the Ragnerock gitops action.
 ```
 
 ```yaml
-apiVersion: ragnerock.com/v1alpha1
+apiVersion: ragnerock.com/v1alpha2
 kind: Secret
 metadata:
   name: llm-credentials

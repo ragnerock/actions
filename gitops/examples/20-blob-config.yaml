@@ -1,5 +1,5 @@
 # BlobProviderConfig · rank 20 · account-scoped · secret-bearing.
-apiVersion: ragnerock.com/v1alpha1
+apiVersion: ragnerock.com/v1alpha2
 kind: BlobProviderConfig
 metadata:
   name: research_bucket

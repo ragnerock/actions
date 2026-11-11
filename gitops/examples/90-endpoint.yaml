@@ -1,5 +1,5 @@
 # Endpoint · rank 90 · project-scoped · not foldered.
-# Deploys the live Workflow named by `sourceWorkflow`. Snapshots are NOT a
+# Deploys the live Agent named by `sourceAgent`. Snapshots are NOT a
 # GitOps kind: Ragnerock takes one automatically whenever that workflow changes,
 # so pinning the workflow already pins what the endpoint runs.
 #
@@ -9,9 +9,9 @@
 # Referencing a tag nothing carries yet is a warning, not a failed apply: the
 # endpoint keeps serving the version it is on.
 #
-# `returnFields` names the producing Agent, not a node — return fields are keyed
+# `returnFields` names the producing Task, not a node — return fields are keyed
 # by operator, so a workflow using one agent twice still names it once.
-apiVersion: ragnerock.com/v1alpha1
+apiVersion: ragnerock.com/v1alpha2
 kind: Endpoint
 metadata:
   name: sentiment_api
@@ -19,10 +19,10 @@ metadata:
     ragnerock.com/project: alpha_research
 spec:
   description: "Public sentiment scoring endpoint"
-  sourceWorkflow: filing_pipeline
+  sourceAgent: filing_pipeline
   snapshotTag: latest
   returnFields:
-    - agent: earnings_sentiment
+    - task: earnings_sentiment
       field: sentiment
   includeContent: false
   isEnabled: true

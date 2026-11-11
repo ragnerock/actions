@@ -1,7 +1,7 @@
 # IngestConfig · rank 95 · project-scoped · not foldered · secret-bearing.
 # Project-scoped, but its `s3.credentials` secretKeyRef points at the
 # account-scoped `blob_credentials` Secret — this cross-scope reference is intended.
-apiVersion: ragnerock.com/v1alpha1
+apiVersion: ragnerock.com/v1alpha2
 kind: IngestConfig
 metadata:
   name: filings_s3_sync
