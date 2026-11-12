@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve job re-delivery issue from parsing (#538)'
-      sha: 6d2a973d993c4e9896df093d23482d28adbb0c52
+      commitTitle: Fix runs panel issue (#540)
+      sha: a616660351a2cc1d294fee21bf58eba2229ac336
       tags:
-      - v2026.11.11-2
+      - v2026.11.12
     path: .
   path: gitops
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve job re-delivery issue from parsing (#538)'
-      sha: 6d2a973d993c4e9896df093d23482d28adbb0c52
+      commitTitle: Fix runs panel issue (#540)
+      sha: a616660351a2cc1d294fee21bf58eba2229ac336
       tags:
-      - v2026.11.11-2
+      - v2026.11.12
     path: .
   path: .github/workflows
 - contents:
   - git:
-      commitTitle: 'FIX: Resolve job re-delivery issue from parsing (#538)'
-      sha: 6d2a973d993c4e9896df093d23482d28adbb0c52
+      commitTitle: Fix runs panel issue (#540)
+      sha: a616660351a2cc1d294fee21bf58eba2229ac336
       tags:
-      - v2026.11.11-2
+      - v2026.11.12
     path: .
   path: .vendir-staging/root
 kind: LockConfig
